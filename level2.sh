@@ -1,4 +1,4 @@
-#!/bin/bash
+    #!/bin/bash
 drawborder() {
    # Draw top
    tput setf 6
@@ -60,28 +60,35 @@ drawborder2() {
       printf %b "$WALLCHAR"
       x=$(( $x + 1 ));
    done
-   tput setf 9
+   tput setf 10
 
    #draw obstacles
-   x=15
-   y=10
-   tput cup $x $y;
-   while [ "$x" -le "20" ];
-   do
- 	 printf %b "$WALLCHAR"
- 	 x=$(( $x + 1));
- 	done
+   tput setf 6
+   FIRSTROW=9
+   FIRSTCOL=5
 
-   x=10
-   y=5
-   tput cup $x $y;
-   while [ "$x" -le "20" ];
+   tput cup $FIRSTROW $FIRSTCOL
+   x=$FIRSTCOL
+   while [ "$x" -le "$LASTCOL" ];
    do
- 	 printf %b "$WALLCHAR"
- 	 x=$(( $x + 1));
- 	done
+      printf %b "$WALLCHAR"
+      x=$(( $x + 1 ));
+   done
 
- 	x=10
+   FIRSTROW=12
+   FIRSTCOL=6
+   x=$FIRSTROW
+   while [ "$x" -le "$LASTROW" ];
+   do
+      tput cup $x $FIRSTCOL; printf %b "$WALLCHAR"
+      tput cup $x $LASTCOL; printf %b "$WALLCHAR"
+      x=$(( $x + 1 ));
+   done
+
+   FIRSTROW=3
+   FIRSTCOL=25
+   LASTROW=7
+   x=$FIRSTROW
    while [ "$x" -le "$LASTROW" ];
    do
       tput cup $x $FIRSTCOL; printf %b "$WALLCHAR"
@@ -99,6 +106,7 @@ apple() {
    APPLEX=$[( $RANDOM % ( $[ $AREAMAXX - $AREAMINX ] + 1 ) ) + $AREAMINX ]
    APPLEY=$[( $RANDOM % ( $[ $AREAMAXY - $AREAMINY ] + 1 ) ) + $AREAMINY ]
 }
+
 
 drawapple() {
    # Check we haven't picked an occupied space
@@ -122,6 +130,7 @@ drawapple() {
    tput setf 9
 }
 
+
 growsnake() {
    # Pad out the arrays with oldest position 3 times to make snake bigger
    LASTPOSX=( ${LASTPOSX[0]} ${LASTPOSX[0]} ${LASTPOSX[0]} ${LASTPOSX[@]} )
@@ -134,6 +143,7 @@ growsnake() {
    done
    drawapple
 }
+
 
 move() {
    case "$DIRECTION" in
@@ -169,6 +179,7 @@ move() {
       then
          tput cup $(( $LASTROW + 1 )) 0
          echo " YIKES!Looks like you ate yourself!"
+         stty sane
          gameover
       fi
       x=$(( $x + 1 ))
@@ -205,13 +216,15 @@ move() {
 }
 
 updatescore() {
-   SCORE=$(( $SCORE + $1 ))
-#   if [ $SCORE -ge 20 ]
-#    then clear
-#        drawborder2
-  #  fi
+   SCORE=$(( $SCORE + $1 ))     
    tput cup 2 30
    printf "SCORE: $SCORE"
+   if [ $SCORE -eq 20 ]
+    then clear
+        drawborder2
+        drawapple
+    fi
+   
 }
 
 randomchar() {
@@ -238,8 +251,8 @@ gameover() {
 }
 
 SNAKECHAR="Ѳ"                           # Character to use for snake
-WALLCHAR="+"                            # Character to use for wall
-APPLECHAR="Ȍ"                         # Character to use for apples
+WALLCHAR="+"
+APPLECHAR="ѽ"  #Ȍ"                         # Character to use for apples
 
 SNAKESIZE=3                             # Initial Size of array aka snake
 DELAY=0.2                               # Timer delay for move function
@@ -301,7 +314,7 @@ trap move ALRM
 # Pick a random direction to start moving in
 DIRECTIONS=( u d l r )
 randomchar "${DIRECTIONS[@]}"
-
+ 
 sleep 1
 move
 while :
